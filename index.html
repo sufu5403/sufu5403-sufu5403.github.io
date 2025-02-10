@@ -1,116 +1,137 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>蘇致宇寒假作業</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #f9f9f9, #cce7ff);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>開學倒數計時</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
 
-        h1 {
-            font-size: 2.5em;
-            color: #2c3e50;
-            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-            animation: fadeIn 1.5s ease;
-        }
+    /* 背景漸變動畫 */
+    @keyframes bgAnimation {
+      0% { background: #0a0a0a; }
+      50% { background: #1a1f3c; }
+      100% { background: #0a0a0a; }
+    }
 
-        .task-container {
-            background: white;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-            padding: 20px;
-            max-width: 500px;
-            width: 90%;
-            margin: 20px;
-            animation: slideIn 1s ease;
-        }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Noto Sans TC', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+      animation: bgAnimation 10s infinite alternate ease-in-out;
+    }
 
-        ul {
-            list-style: none;
-            padding: 0;
-        }
+    .container {
+      text-align: center;
+      padding: 40px;
+      border-radius: 15px;
+      background: rgba(0, 0, 0, 0.7);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      animation: fadeIn 2s ease-out;
+    }
 
-        li {
-            margin: 15px 0;
-            font-size: 1.2em;
-            display: flex;
-            align-items: center;
-        }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-        input[type="checkbox"] {
-            margin-right: 10px;
-            transform: scale(1.5);
-        }
+    /* 標題與倒數計時的顏色一致 */
+    .title, #countdown {
+      font-size: 2em;
+      font-weight: bold;
+      background: linear-gradient(to right, #4682B4, #8A2BE2, #FF69B4);
+      -webkit-background-clip: text;
+      color: transparent;
+      animation: pulse 1.5s infinite alternate;
+    }
 
-        button {
-            background: #3498db;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 1em;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.05); }
+    }
 
-        button:hover {
-            background: #2980b9;
-        }
+    .copyright {
+      margin-top: 20px;
+      font-size: 0.9em;
+      color: white;
+      opacity: 0.7;
+    }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+    .admin-message {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      font-size: 0.9em;
+      color: white;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 5px 10px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      opacity: 1;
+      transition: opacity 1s;
+    }
 
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-100%); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-    </style>
+    .circle {
+      width: 10px;
+      height: 10px;
+      margin-right: 5px;
+      border-radius: 50%;
+      background-color: #87CEFA;
+      animation: loading 4s ease-in-out infinite;
+    }
+
+    @keyframes loading {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.5); opacity: 0.5; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+  </style>
 </head>
 <body>
-    <h1>蘇致宇寒假作業</h1>
-    <div class="task-container">
-        <ul id="taskList">
-            <li><input type="checkbox" id="task1"> <label for="task1">國卷3張</label></li>
-            <li><input type="checkbox" id="task2"> <label for="task2">愛閱網認證1本書</label></li>
-            <li><input type="checkbox" id="task3"> <label for="task3">閱讀學習單1張</label></li>
-            <li><input type="checkbox" id="task4"> <label for="task4">【我家年菜】學習單</label></li>
-            <li><input type="checkbox" id="task5"> <label for="task5">寒假教材1本</label></li>
-        </ul>
-        <button onclick="saveTasks()">儲存進度</button>
-    </div>
+  <div class="container">
+    <h1 class="title">開學倒數計時</h1>
+    <div id="countdown"></div>
+  </div>
+  <div class="copyright">© 蘇致宇保留所有權利</div>
+  <div class="admin-message" id="adminMessage"><div class="circle"></div> 管理員 sufu5403 更新中...</div>
 
-    <script>
-        const taskList = document.querySelectorAll('input[type="checkbox"]');
+  <script>
+    function updateCountdown() {
+      var now = new Date();
+      var target = new Date("2025-02-11T00:00:00"); // 設定開學日期
+      
+      var diff = target - now;
+      
+      if (diff <= 0) {
+        document.getElementById("countdown").innerHTML = "開學啦!";
+        clearInterval(timer);
+        return;
+      }
+      
+      var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      var seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      
+      document.getElementById("countdown").innerHTML =
+        days + "天 " + hours + "時 " + minutes + "分 " + seconds + "秒";
+    }
 
-        // 載入儲存的進度
-        document.addEventListener('DOMContentLoaded', () => {
-            taskList.forEach(task => {
-                const saved = localStorage.getItem(task.id);
-                if (saved === 'true') {
-                    task.checked = true;
-                }
-            });
-        });
+    updateCountdown();
+    var timer = setInterval(updateCountdown, 1000);
 
-        // 儲存進度
-        function saveTasks() {
-            taskList.forEach(task => {
-                localStorage.setItem(task.id, task.checked);
-            });
-            alert('進度已儲存！');
-        }
-    </script>
+    function toggleAdminMessage() {
+      var adminMessage = document.getElementById("adminMessage");
+      adminMessage.style.opacity = (adminMessage.style.opacity == "0") ? "1" : "0";
+    }
+    setInterval(toggleAdminMessage, 20000);
+  </script>
 </body>
 </html>
