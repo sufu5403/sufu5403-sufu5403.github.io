@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>開學倒數計時</title>
+  <title>放暑假倒數計時</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
 
@@ -96,7 +96,7 @@
 </head>
 <body>
   <div class="container">
-    <h1 class="title">開學倒數計時</h1>
+    <h1 class="title">放暑假倒數計時</h1>
     <div id="countdown"></div>
   </div>
   <div class="copyright">© 蘇致宇保留所有權利</div>
@@ -105,12 +105,12 @@
   <script>
     function updateCountdown() {
       var now = new Date();
-      var target = new Date("2025-02-11T00:00:00"); // 設定開學日期
+      var target = new Date("2025-07-01T00:00:00"); // 設定開學日期
       
       var diff = target - now;
       
       if (diff <= 0) {
-        document.getElementById("countdown").innerHTML = "開學啦!";
+        document.getElementById("countdown").innerHTML = "放暑假啦!";
         clearInterval(timer);
         return;
       }
