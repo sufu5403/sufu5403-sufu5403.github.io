@@ -2,137 +2,87 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>放暑假倒數計時</title>
+  <title>複雜漸層球動畫</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
-
-    /* 背景漸變動畫 */
-    @keyframes bgAnimation {
-      0% { background: #0a0a0a; }
-      50% { background: #1a1f3c; }
-      100% { background: #0a0a0a; }
-    }
-
+    /* 全螢幕置中，深色背景以襯托球體 */
     body {
       margin: 0;
       padding: 0;
-      font-family: 'Noto Sans TC', sans-serif;
+      height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      flex-direction: column;
-      animation: bgAnimation 10s infinite alternate ease-in-out;
+      background-color: #222;
+      overflow: hidden; /* 若有超出畫面，隱藏 */
     }
-
-    .container {
-      text-align: center;
-      padding: 40px;
-      border-radius: 15px;
-      background: rgba(0, 0, 0, 0.7);
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      animation: fadeIn 2s ease-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* 標題與倒數計時的顏色一致 */
-    .title, #countdown {
-      font-size: 2em;
-      font-weight: bold;
-      background: linear-gradient(to right, #4682B4, #8A2BE2, #FF69B4);
-      -webkit-background-clip: text;
-      color: transparent;
-      animation: pulse 1.5s infinite alternate;
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      100% { transform: scale(1.05); }
-    }
-
-    .copyright {
-      margin-top: 20px;
-      font-size: 0.9em;
-      color: white;
-      opacity: 0.7;
-    }
-
-    .admin-message {
-      position: fixed;
-      bottom: 10px;
-      left: 10px;
-      font-size: 0.9em;
-      color: white;
-      background: rgba(0, 0, 0, 0.7);
-      padding: 5px 10px;
-      border-radius: 5px;
-      display: flex;
-      align-items: center;
-      opacity: 1;
-      transition: opacity 1s;
-    }
-
-    .circle {
-      width: 10px;
-      height: 10px;
-      margin-right: 5px;
+    
+    /* 建立一個圓形容器，用來放置多層漸層 */
+    .ball {
+      width: 200px;
+      height: 200px;
       border-radius: 50%;
-      background-color: #87CEFA;
-      animation: loading 4s ease-in-out infinite;
+      position: relative;  /* 讓偽元素以 ball 為參考 */
+      overflow: hidden;    /* 超出圓形的部分隱藏 */
+      animation: rotate 10s linear infinite; /* 整體旋轉 */
+      /* 可加上背景作為底層漸層 */
+      background: radial-gradient(circle at center, 
+        #ffffff 0%, #f0f0f0 30%, #888 100%);
     }
 
-    @keyframes loading {
-      0% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.5); opacity: 0.5; }
-      100% { transform: scale(1); opacity: 1; }
+    /* 使用偽元素 ::before 與 ::after 製作多層漸層 */
+    .ball::before,
+    .ball::after {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      /* conic-gradient 可以做出類似漩渦彩虹的效果 */
+      background: conic-gradient(
+        from 0deg,
+        /* 可自由調整顏色、漸層停駐點 */
+        #ff0000 0%, 
+        #ff7f00 16.7%, 
+        #ffff00 33.4%, 
+        #00ff00 50%, 
+        #0000ff 66.7%, 
+        #8b00ff 83.3%, 
+        #ff0000 100%
+      );
+      animation: swirl 5s linear infinite;
+      opacity: 0.7;
+      mix-blend-mode: screen; /* 使兩層漸層可疊加混合 */
+    }
+
+    /* 調整第二層偽元素的速度、透明度，產生更多變化 */
+    .ball::after {
+      animation-duration: 7s; /* 與 ::before 不同速度 */
+      opacity: 0.5;
+    }
+
+    /* ball 整體的旋轉動畫 */
+    @keyframes rotate {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* 偽元素漸層的旋轉動畫 */
+    @keyframes swirl {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1 class="title">放暑假倒數計時</h1>
-    <div id="countdown"></div>
-  </div>
-  <div class="copyright">© 蘇致宇保留所有權利</div>
-  <div class="admin-message" id="adminMessage"><div class="circle"></div> 管理員 sufu5403 更新中...</div>
-
-  <script>
-    function updateCountdown() {
-      var now = new Date();
-      var target = new Date("2025-07-01T00:00:00"); // 設定開學日期
-      
-      var diff = target - now;
-      
-      if (diff <= 0) {
-        document.getElementById("countdown").innerHTML = "放暑假啦!";
-        clearInterval(timer);
-        return;
-      }
-      
-      var days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      var seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      
-      document.getElementById("countdown").innerHTML =
-        days + "天 " + hours + "時 " + minutes + "分 " + seconds + "秒";
-    }
-
-    updateCountdown();
-    var timer = setInterval(updateCountdown, 1000);
-
-    function toggleAdminMessage() {
-      var adminMessage = document.getElementById("adminMessage");
-      adminMessage.style.opacity = (adminMessage.style.opacity == "0") ? "1" : "0";
-    }
-    setInterval(toggleAdminMessage, 20000);
-  </script>
+  <div class="ball"></div>
 </body>
 </html>
-
