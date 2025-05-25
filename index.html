@@ -1,88 +1,341 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <title>複雜漸層球動畫</title>
-  <style>
-    /* 全螢幕置中，深色背景以襯托球體 */
-    body {
-      margin: 0;
-      padding: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background-color: #222;
-      overflow: hidden; /* 若有超出畫面，隱藏 */
-    }
-    
-    /* 建立一個圓形容器，用來放置多層漸層 */
-    .ball {
-      width: 200px;
-      height: 200px;
-      border-radius: 50%;
-      position: relative;  /* 讓偽元素以 ball 為參考 */
-      overflow: hidden;    /* 超出圓形的部分隱藏 */
-      animation: rotate 10s linear infinite; /* 整體旋轉 */
-      /* 可加上背景作為底層漸層 */
-      background: radial-gradient(circle at center, 
-        #ffffff 0%, #f0f0f0 30%, #888 100%);
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前峰國中哥布林王國</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* 客服聊天視窗的固定定位和基本樣式 */
+        .chat-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px; /* 聊天視窗寬度 */
+            height: 450px; /* 聊天視窗高度 */
+            background-color: #fff;
+            border-radius: 1rem; /* 圓角 */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); /* 陰影 */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: all 0.3s ease-in-out; /* 平滑過渡效果 */
+            z-index: 1000; /* 確保在最上層 */
+        }
 
-    /* 使用偽元素 ::before 與 ::after 製作多層漸層 */
-    .ball::before,
-    .ball::after {
-      content: "";
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      /* conic-gradient 可以做出類似漩渦彩虹的效果 */
-      background: conic-gradient(
-        from 0deg,
-        /* 可自由調整顏色、漸層停駐點 */
-        #ff0000 0%, 
-        #ff7f00 16.7%, 
-        #ffff00 33.4%, 
-        #00ff00 50%, 
-        #0000ff 66.7%, 
-        #8b00ff 83.3%, 
-        #ff0000 100%
-      );
-      animation: swirl 5s linear infinite;
-      opacity: 0.7;
-      mix-blend-mode: screen; /* 使兩層漸層可疊加混合 */
-    }
+        /* 最小化狀態 */
+        .chat-container.minimized {
+            width: 60px;
+            height: 60px;
+            bottom: 20px;
+            right: 20px;
+            border-radius: 50%; /* 變成圓形 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            cursor: pointer;
+        }
 
-    /* 調整第二層偽元素的速度、透明度，產生更多變化 */
-    .ball::after {
-      animation-duration: 7s; /* 與 ::before 不同速度 */
-      opacity: 0.5;
-    }
+        /* 聊天訊息區塊樣式 */
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            background-color: #f9fafb; /* 淺灰色背景 */
+            border-top-left-radius: 0.5rem;
+            border-top-right-radius: 0.5rem;
+        }
 
-    /* ball 整體的旋轉動畫 */
-    @keyframes rotate {
-      0% {
-        transform: rotate(0deg);
-      }
-      100% {
-        transform: rotate(360deg);
-      }
-    }
+        /* 聊天訊息泡泡樣式 */
+        .message-bubble {
+            max-width: 80%;
+            padding: 0.6rem 1rem;
+            border-radius: 1rem;
+            margin-bottom: 0.75rem;
+            word-wrap: break-word;
+        }
 
-    /* 偽元素漸層的旋轉動畫 */
-    @keyframes swirl {
-      0% {
-        transform: rotate(0deg);
-      }
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-  </style>
+        .message-bubble.user {
+            background-color: #3B82F6; /* 藍色 */
+            color: white;
+            margin-left: auto; /* 靠右對齊 */
+            border-bottom-right-radius: 0.2rem;
+        }
+
+        .message-bubble.ai {
+            background-color: #E5E7EB; /* 淺灰 */
+            color: #1F2937;
+            margin-right: auto; /* 靠左對齊 */
+            border-bottom-left-radius: 0.2rem;
+        }
+
+        /* 隱藏聊天視窗內容（最小化時） */
+        .chat-container.minimized .chat-header,
+        .chat-container.minimized .chat-messages,
+        .chat-container.minimized .chat-input-area {
+            display: none;
+        }
+
+        /* 最小化按鈕的圖示 */
+        .chat-container.minimized .chat-toggle-button {
+            display: block; /* 最小化時顯示按鈕 */
+            font-size: 2rem;
+            color: #4B5563;
+        }
+
+        /* 浮動按鈕的樣式 */
+        .floating-chat-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-color: #10B981; /* 綠色 */
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease-in-out;
+            z-index: 1001; /* 確保在聊天視窗之上 */
+        }
+
+        .floating-chat-button:hover {
+            transform: scale(1.1);
+            background-color: #059669;
+        }
+    </style>
 </head>
-<body>
-  <div class="ball"></div>
+<body class="bg-gradient-to-br from-green-400 to-blue-500 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white p-8 rounded-xl shadow-2xl max-w-4xl w-full text-center transform transition-all duration-300 hover:scale-105">
+        <h1 class="text-5xl font-extrabold text-gray-900 mb-6 leading-tight">
+            前峰國中哥布林王國
+        </h1>
+
+        <p class="text-xl text-gray-700 mb-8">
+            哥布林王國,成立於2025年3月11日,是一個由國中單身男女組成的聊天聚落。 
+我們自稱「哥布林」,不為別的,只因單身但不孤單,搞笑又真誠,嘴砲中帶點溫柔,日常中充滿火花。 
+這裡沒有王子公主,只有一群在訊息裡互相鬧互相挺的哥布林夥伴。
+        </p>
+
+        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-6 rounded-lg mb-8 shadow-md">
+            <h2 class="text-2xl font-bold mb-3 flex items-center justify-center">
+                <svg class="w-7 h-7 mr-3 text-yellow-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.542 2.705-1.542 3.47 0l5.58 11.23c.75 1.51.148 3.3-1.565 3.3H4.242c-1.713 0-2.315-1.79-.164-3.3l5.58-11.23zM11 15a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V7a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                聲明！
+            </h2>
+            <p class="text-lg">
+                追蹤我們的帳號，將會無條件拉您進入我們的專屬社群群組！
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div class="bg-blue-50 p-6 rounded-lg shadow-md border border-blue-200 flex flex-col items-center">
+                <h3 class="text-xl font-semibold text-blue-800 mb-2">總統</h3>
+                <a href="https://www.instagram.com/qwer789456321/" target="_blank" rel="noopener noreferrer" class="text-gray-700 text-lg flex items-center hover:text-blue-600 transition-colors duration-200">
+                    @qwer789456321
+                    <svg class="w-5 h-5 ml-2 text-pink-600" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.217 2.428.465.66.254 1.216.598 1.772 1.154.556.556.909 1.112 1.154 1.772.248.637.416 1.364.465 2.428.047 1.024.06 1.379.06 3.808v.63a4.5 4.5 0 01-.07 1.006c-.035.52-.103 1.06-.271 1.59-.147.45-.33.86-.53 1.22-.205.36-.461.66-.776.975-.315.315-.615.571-.975.776-.36.2-.77.383-1.22.53-.53.168-1.07.236-1.59.271a4.5 4.5 0 01-1.006.07h-.63c-2.43 0-2.784-.013-3.808-.06-1.064-.049-1.791-.217-2.428-.465-.66-.254-1.216-.598-1.772-1.154-.556-.556-.909-1.112-1.154-1.772-.248-.637-.416-1.364-.465-2.428C2.013 14.784 2 14.43 2 12v-.63c0-2.43.013-2.784.06-3.808.049-1.064.217-1.791.465-2.428.254-.66.598-1.216 1.154-1.772.556-.556 1.112-.909 1.772-1.154.637-.248 1.364-.416 2.428-.465C9.216 2.013 9.57 2 12 2zm0 2.16a7.84 7.84 0 100 15.68 7.84 7.84 0 000-15.68zm0 3.87a5.81 5.81 0 110 11.62 5.81 5.81 0 010-11.62zm0 2.16a3.65 3.65 0 100 7.3 3.65 3.65 0 000-7.3zM16.5 7.17a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clip-rule="evenodd" />
+                    </svg>
+                </a>
+            </div>
+            <div class="bg-blue-50 p-6 rounded-lg shadow-md border border-blue-200 flex flex-col items-center">
+                <h3 class="text-xl font-semibold text-blue-800 mb-2">副總統</h3>
+                <a href="https://www.instagram.com/e1310510/" target="_blank" rel="noopener noreferrer" class="text-gray-700 text-lg flex items-center hover:text-blue-600 transition-colors duration-200">
+                    @e1310510
+                    <svg class="w-5 h-5 ml-2 text-pink-600" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.217 2.428.465.66.254 1.216.598 1.772 1.154.556.556.909 1.112 1.154 1.772.248.637.416 1.364.465 2.428.047 1.024.06 1.379.06 3.808v.63a4.5 4.5 0 01-.07 1.006c-.035.52-.103 1.06-.271 1.59-.147.45-.33.86-.53 1.22-.205.36-.461.66-.776.975-.315.315-.615.571-.975.776-.36.2-.77.383-1.22.53-.53.168-1.07.236-1.59.271a4.5 4.5 0 01-1.006.07h-.63c-2.43 0-2.784-.013-3.808-.06-1.064-.049-1.791-.217-2.428-.465-.66-.254-1.216-.598-1.772-1.154-.556-.556-.909-1.112-1.154-1.772-.248-.637-.416-1.364-.465-2.428C2.013 14.784 2 14.43 2 12v-.63c0-2.43.013-2.784.06-3.808.049-1.064.217-1.791.465-2.428.254-.66.598-1.216 1.154-1.772.556-.556 1.112-.909 1.772-1.154.637-.248 1.364-.416 2.428-.465C9.216 2.013 9.57 2 12 2zm0 2.16a7.84 7.84 0 100 15.68 7.84 7.84 0 000-15.68zm0 3.87a5.81 5.81 0 110 11.62 5.81 5.81 0 010-11.62zm0 2.16a3.65 3.65 0 100 7.3 3.65 3.65 0 000-7.3zM16.5 7.17a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clip-rule="evenodd" />
+                    </svg>
+                </a>
+            </div>
+            <div class="bg-blue-50 p-6 rounded-lg shadow-md border border-blue-200 flex flex-col items-center">
+                <h3 class="text-xl font-semibold text-blue-800 mb-2">總部總裁</h3>
+                <a href="https://www.instagram.com/kerry_magic666/" target="_blank" rel="noopener noreferrer" class="text-gray-700 text-lg flex items-center hover:text-blue-600 transition-colors duration-200">
+                    @kerry_magic666
+                    <svg class="w-5 h-5 ml-2 text-pink-600" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.217 2.428.465.66.254 1.216.598 1.772 1.154.556.556.909 1.112 1.154 1.772.248.637.416 1.364.465 2.428.047 1.024.06 1.379.06 3.808v.63a4.5 4.5 0 01-.07 1.006c-.035.52-.103 1.06-.271 1.59-.147.45-.33.86-.53 1.22-.205.36-.461.66-.776.975-.315.315-.615.571-.975.776-.36.2-.77.383-1.22.53-.53.168-1.07.236-1.59.271a4.5 4.5 0 01-1.006.07h-.63c-2.43 0-2.784-.013-3.808-.06-1.064-.049-1.791-.217-2.428-.465-.66-.254-1.216-.598-1.772-1.154-.556-.556-.909-1.112-1.154-1.772-.248-.637-.416-1.364-.465-2.428C2.013 14.784 2 14.43 2 12v-.63c0-2.43.013-2.784.06-3.808.049-1.064.217-1.791.465-2.428.254-.66.598-1.216 1.154-1.772.556-.556 1.112-.909 1.772-1.154.637-.248 1.364-.416 2.428-.465C9.216 2.013 9.57 2 12 2zm0 2.16a7.84 7.84 0 100 15.68 7.84 7.84 0 000-15.68zm0 3.87a5.81 5.81 0 110 11.62 5.81 5.81 0 010-11.62zm0 2.16a3.65 3.65 0 100 7.3 3.65 3.65 0 000-7.3zM16.5 7.17a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clip-rule="evenodd" />
+                    </svg>
+                </a>
+            </div>
+            <div class="bg-blue-50 p-6 rounded-lg shadow-md border border-blue-200 flex flex-col items-center">
+                <h3 class="text-xl font-semibold text-blue-800 mb-2">小混混</h3>
+                <a href="https://www.instagram.com/89._.dry/" target="_blank" rel="noopener noreferrer" class="text-gray-700 text-lg flex items-center hover:text-blue-600 transition-colors duration-200">
+                    @89._.dry
+                    <svg class="w-5 h-5 ml-2 text-pink-600" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.217 2.428.465.66.254 1.216.598 1.772 1.154.556.556.909 1.112 1.154 1.772.248.637.416 1.364.465 2.428.047 1.024.06 1.379.06 3.808v.63a4.5 4.5 0 01-.07 1.006c-.035.52-.103 1.06-.271 1.59-.147.45-.33.86-.53 1.22-.205.36-.461.66-.776.975-.315.315-.615.571-.975.776-.36.2-.77.383-1.22.53-.53.168-1.07.236-1.59.271a4.5 4.5 0 01-1.006.07h-.63c-2.43 0-2.784-.013-3.808-.06-1.064-.049-1.791-.217-2.428-.465-.66-.254-1.216-.598-1.772-1.154-.556-.556-.909-1.112-1.154-1.772-.248-.637-.416-1.364-.465-2.428C2.013 14.784 2 14.43 2 12v-.63c0-2.43.013-2.784.06-3.808.049-1.064.217-1.791.465-2.428.254-.66.598-1.216 1.154-1.772.556-.556 1.112-.909 1.772-1.154.637-.248 1.364-.416 2.428-.465C9.216 2.013 9.57 2 12 2zm0 2.16a7.84 7.84 0 100 15.68 7.84 7.84 0 000-15.68zm0 3.87a5.81 5.81 0 110 11.62 5.81 5.81 0 010-11.62zm0 2.16a3.65 3.65 0 100 7.3 3.65 3.65 0 000-7.3zM16.5 7.17a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clip-rule="evenodd" />
+                    </svg>
+                </a>
+            </div>
+            <div class="bg-blue-50 p-6 rounded-lg shadow-md border border-blue-200 flex flex-col items-center">
+                <h3 class="text-xl font-semibold text-blue-800 mb-2">小編</h3>
+                <a href="https://www.instagram.com/kerry_magic666/" target="_blank" rel="noopener noreferrer" class="text-gray-700 text-lg flex items-center hover:text-blue-600 transition-colors duration-200">
+                    @kerry_magic666
+                    <svg class="w-5 h-5 ml-2 text-pink-600" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.217 2.428.465.66.254 1.216.598 1.772 1.154.556.556.909 1.112 1.154 1.772.248.637.416 1.364.465 2.428.047 1.024.06 1.379.06 3.808v.63a4.5 4.5 0 01-.07 1.006c-.035.52-.103 1.06-.271 1.59-.147.45-.33.86-.53 1.22-.205.36-.461.66-.776.975-.315.315-.615.571-.975.776-.36.2-.77.383-1.22.53-.53.168-1.07.236-1.59.271a4.5 4.5 0 01-1.006.07h-.63c-2.43 0-2.784-.013-3.808-.06-1.064-.049-1.791-.217-2.428-.465-.66-.254-1.216-.598-1.772-1.154-.556-.556-.909-1.112-1.154-1.772-.248-.637-.416-1.364-.465-2.428C2.013 14.784 2 14.43 2 12v-.63c0-2.43.013-2.784.06-3.808.049-1.064.217-1.791.465-2.428.254-.66.598-1.216 1.154-1.772.556-.556 1.112-.909 1.772-1.154.637-.248 1.364-.416 2.428-.465C9.216 2.013 9.57 2 12 2zm0 2.16a7.84 7.84 0 100 15.68 7.84 7.84 0 000-15.68zm0 3.87a5.81 5.81 0 110 11.62 5.81 5.81 0 010-11.62zm0 2.16a3.65 3.65 0 100 7.3 3.65 3.65 0 000-7.3zM16.5 7.17a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clip-rule="evenodd" />
+                    </svg>
+                </a>
+            </div>
+            <div class="bg-blue-50 p-6 rounded-lg shadow-md border border-blue-200 flex flex-col items-center">
+                <h3 class="text-xl font-semibold text-blue-800 mb-2">網站設計師</h3>
+                <a href="https://www.instagram.com/sufu5403/" target="_blank" rel="noopener noreferrer" class="text-gray-700 text-lg flex items-center hover:text-blue-600 transition-colors duration-200">
+                    @sufu5403
+                    <svg class="w-5 h-5 ml-2 text-pink-600" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.217 2.428.465.66.254 1.216.598 1.772 1.154.556.556.909 1.112 1.154 1.772.248.637.416 1.364.465 2.428.047 1.024.06 1.379.06 3.808v.63a4.5 4.5 0 01-.07 1.006c-.035.52-.103 1.06-.271 1.59-.147.45-.33.86-.53 1.22-.205.36-.461.66-.776.975-.315.315-.615.571-.975.776-.36.2-.77.383-1.22.53-.53.168-1.07.236-1.59.271a4.5 4.5 0 01-1.006.07h-.63c-2.43 0-2.784-.013-3.808-.06-1.064-.049-1.791-.217-2.428-.465-.66-.254-1.216-.598-1.772-1.154-.556-.556-.909-1.112-1.154-1.772-.248-.637-.416-1.364-.465-2.428C2.013 14.784 2 14.43 2 12v-.63c0-2.43.013-2.784.06-3.808.049-1.064.217-1.791.465-2.428.254-.66.598-1.216 1.154-1.772.556-.556 1.112-.909 1.772-1.154.637-.248 1.364-.416 2.428-.465C9.216 2.013 9.57 2 12 2zm0 2.16a7.84 7.84 0 100 15.68 7.84 7.84 0 000-15.68zm0 3.87a5.81 5.81 0 110 11.62 5.81 5.81 0 010-11.62zm0 2.16a3.65 3.65 0 100 7.3 3.65 3.65 0 000-7.3zM16.5 7.17a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clip-rule="evenodd" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+
+        <p class="text-gray-500 text-sm mt-8">
+            © 2025 前峰國中哥布林王國. 版權所有.
+        </p>
+    </div>
+
+    <div id="chatToggleButton" class="floating-chat-button">
+        💬
+    </div>
+
+    <div id="chatWindow" class="chat-container hidden">
+        <div class="chat-header bg-gray-800 text-white p-4 flex justify-between items-center rounded-t-xl">
+            <h3 class="text-lg font-semibold">前峰國中哥布林王國客服</h3>
+            <div>
+                <button id="minimizeChat" class="text-gray-300 hover:text-white mr-2 text-2xl leading-none">&minus;</button>
+                <button id="closeChat" class="text-gray-300 hover:text-white text-2xl leading-none">&times;</button>
+            </div>
+        </div>
+        <div id="chatMessages" class="chat-messages flex-grow p-4 overflow-y-auto">
+            <div class="message-bubble ai">您好！我是前峰國中哥布林王國的客服，有什麼可以為您服務的嗎？</div>
+        </div>
+        <div class="chat-input-area p-4 border-t border-gray-200 flex items-center">
+            <input type="text" id="chatInput" placeholder="輸入您的訊息..." class="flex-grow p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <button id="sendMessage" class="ml-3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full shadow-md transition duration-200">
+                傳送
+            </button>
+        </div>
+        <div id="chatLoading" class="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center hidden rounded-xl">
+            <div class="text-gray-700 text-lg font-semibold">思考中...</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatToggleButton = document.getElementById('chatToggleButton');
+            const chatWindow = document.getElementById('chatWindow');
+            const minimizeChatButton = document.getElementById('minimizeChat');
+            const closeChatButton = document.getElementById('closeChat');
+            const chatMessagesDiv = document.getElementById('chatMessages');
+            const chatInput = document.getElementById('chatInput');
+            const sendMessageButton = document.getElementById('sendMessage');
+            const chatLoading = document.getElementById('chatLoading');
+
+            let chatHistory = [{
+                role: "model",
+                parts: [{ text: "您好！我是前峰國中哥布林王國的客服，有什麼可以為您服務的嗎？" }]
+            }]; // 初始對話紀錄
+
+            // 顯示/隱藏聊天視窗
+            chatToggleButton.addEventListener('click', () => {
+                chatWindow.classList.toggle('hidden');
+                chatWindow.classList.remove('minimized'); // 確保打開時不是最小化狀態
+                chatToggleButton.classList.add('hidden'); // 隱藏浮動按鈕
+                scrollToBottom();
+            });
+
+            // 最小化聊天視窗
+            minimizeChatButton.addEventListener('click', () => {
+                chatWindow.classList.add('minimized');
+                chatToggleButton.classList.remove('hidden'); // 顯示浮動按鈕
+            });
+
+            // 關閉聊天視窗
+            closeChatButton.addEventListener('click', () => {
+                chatWindow.classList.add('hidden');
+                chatWindow.classList.remove('minimized');
+                chatToggleButton.classList.remove('hidden'); // 顯示浮動按鈕
+            });
+
+            // 點擊最小化後的圓形按鈕重新打開
+            chatWindow.addEventListener('click', (event) => {
+                if (chatWindow.classList.contains('minimized')) {
+                    chatWindow.classList.remove('minimized');
+                    chatWindow.classList.remove('hidden');
+                    chatToggleButton.classList.add('hidden');
+                    scrollToBottom();
+                    event.stopPropagation(); // 防止事件冒泡到 body
+                }
+            });
+
+            // 滾動到聊天訊息底部
+            function scrollToBottom() {
+                chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+            }
+
+            // 顯示訊息到聊天視窗
+            function displayMessage(message, sender) {
+                const messageBubble = document.createElement('div');
+                messageBubble.classList.add('message-bubble', sender);
+                messageBubble.textContent = message;
+                chatMessagesDiv.appendChild(messageBubble);
+                scrollToBottom();
+            }
+
+            // 傳送訊息
+            async function sendMessage() {
+                const userMessage = chatInput.value.trim();
+                if (userMessage === '') return;
+
+                displayMessage(userMessage, 'user');
+                chatHistory.push({ role: "user", parts: [{ text: userMessage }] });
+                chatInput.value = ''; // 清空輸入框
+
+                chatLoading.classList.remove('hidden'); // 顯示載入指示器
+
+                try {
+                    const payload = { contents: chatHistory };
+                    const apiKey = ""; // Canvas will automatically provide the API key
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const aiResponse = result.candidates[0].content.parts[0].text;
+                        displayMessage(aiResponse, 'ai');
+                        chatHistory.push({ role: "model", parts: [{ text: aiResponse }] });
+                    } else {
+                        displayMessage('抱歉，我無法理解您的意思，請再試一次。', 'ai');
+                        console.error('Gemini API response structure unexpected:', result);
+                    }
+                } catch (error) {
+                    displayMessage('與客服連線時發生錯誤，請稍後再試。', 'ai');
+                    console.error('Error calling Gemini API:', error);
+                } finally {
+                    chatLoading.classList.add('hidden'); // 隱藏載入指示器
+                }
+            }
+
+            // 綁定傳送按鈕和 Enter 鍵
+            sendMessageButton.addEventListener('click', sendMessage);
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
