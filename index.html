@@ -121,9 +121,9 @@
         </h1>
 
         <p class="text-xl text-gray-700 mb-8">
-            哥布林王國,成立於2025年3月11日,是一個由國中單身男女組成的聊天聚落。 
-我們自稱「哥布林」,不為別的,只因單身但不孤單,搞笑又真誠,嘴砲中帶點溫柔,日常中充滿火花。 
-這裡沒有王子公主,只有一群在訊息裡互相鬧互相挺的哥布林夥伴。
+            哥布林王國,成立於2025年3月11日,是一個由國中單身男女組成的聊天聚落。
+            我們自稱「哥布林」,不為別的,只因單身但不孤單,搞笑又真誠,嘴砲中帶點溫柔,日常中充滿火花。
+            這裡沒有王子公主,只有一群在訊息裡互相鬧互相挺的哥布林夥伴。
         </p>
 
         <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-6 rounded-lg mb-8 shadow-md">
@@ -292,13 +292,19 @@
                 if (userMessage === '') return;
 
                 displayMessage(userMessage, 'user');
-                chatHistory.push({ role: "user", parts: [{ text: userMessage }] });
                 chatInput.value = ''; // 清空輸入框
 
                 chatLoading.classList.remove('hidden'); // 顯示載入指示器
 
                 try {
-                    const payload = { contents: chatHistory };
+                    // 這裡構建給 Gemini API 的提示，明確指示回答範圍
+                    const systemInstruction = `你是一個前峰國中哥布林王國的客服人員。你的職責是回答與本網站內容相關的問題，例如網站簡介、聲明、幹部列表以及其他直接與『前峰國中哥布林王國』網站相關的資訊。如果問題與網站內容無關，請禮貌地回答：'抱歉，我只能回答與前峰國中哥布林王國網站相關的問題。'`;
+
+                    // 將使用者訊息加入到新的 chatHistory，並在前面加上系統指令
+                    let currentChatHistory = [...chatHistory]; // 複製一份，避免修改原始的 chatHistory
+                    currentChatHistory.push({ role: "user", parts: [{ text: systemInstruction + "\n\n使用者問題：" + userMessage }] });
+
+                    const payload = { contents: currentChatHistory };
                     const apiKey = ""; // Canvas will automatically provide the API key
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
@@ -315,6 +321,7 @@
                         result.candidates[0].content.parts.length > 0) {
                         const aiResponse = result.candidates[0].content.parts[0].text;
                         displayMessage(aiResponse, 'ai');
+                        chatHistory.push({ role: "user", parts: [{ text: userMessage }] }); // 只有當AI成功回應時才將用戶訊息加入到長期歷史
                         chatHistory.push({ role: "model", parts: [{ text: aiResponse }] });
                     } else {
                         displayMessage('抱歉，我無法理解您的意思，請再試一次。', 'ai');
