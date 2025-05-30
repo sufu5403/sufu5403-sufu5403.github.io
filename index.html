@@ -281,7 +281,8 @@
             function displayMessage(message, sender) {
                 const messageBubble = document.createElement('div');
                 messageBubble.classList.add('message-bubble', sender);
-                messageBubble.textContent = message;
+                // 使用 innerHTML 來渲染 HTML 內容
+                messageBubble.innerHTML = message;
                 chatMessagesDiv.appendChild(messageBubble);
                 scrollToBottom();
             }
@@ -297,15 +298,35 @@
                 chatLoading.classList.remove('hidden'); // 顯示載入指示器
 
                 try {
-                    // 這裡構建給 Gemini API 的提示，明確指示回答範圍
-                    const systemInstruction = `你是一個前峰國中哥布林王國的客服人員。你的職責是回答與本網站內容相關的問題，例如網站簡介、聲明、幹部列表以及其他直接與『前峰國中哥布林王國』網站相關的資訊。如果問題與網站內容無關，請禮貌地回答：'抱歉，我只能回答與前峰國中哥布林王國網站相關的問題。'`;
+                    // 網站內容作為 AI 的知識庫
+                    const websiteContent = `
+                        網站標題：前峰國中哥布林王國
+                        網站簡介：哥布林王國,成立於2025年3月11日,是一個由國中單身男女組成的聊天聚落。我們自稱「哥布林」,不為別的,只因單身但不孤單,搞笑又真誠,嘴砲中帶點溫柔,日常中充滿火花。這裡沒有王子公主,只有一群在訊息裡互相鬧互相挺的哥布林夥伴。
+                        聲明：追蹤我們的帳號，將會無條件拉您進入我們的專屬社群群組！
+                        幹部列表：
+                        - 總統: @qwer789456321 (Instagram: https://www.instagram.com/qwer789456321/)
+                        - 副總統: @e1310510 (Instagram: https://www.instagram.com/e1310510/)
+                        - 總部總裁: @kerry_magic666 (Instagram: https://www.instagram.com/kerry_magic666/)
+                        - 小混混: @89._.dry (Instagram: https://www.instagram.com/89._.dry/)
+                        - 小編: @kerry_magic666 (Instagram: https://www.instagram.com/kerry_magic666/)
+                        - 網站設計師: @sufu5403 (Instagram: https://www.instagram.com/sufu5403/)
+                    `;
+
+                    // 這裡構建給 Gemini API 的提示，明確指示回答範圍並提供網站內容
+                    const systemInstruction = `你是一個前峰國中哥布林王國的客服人員。你的職責是根據以下提供的網站內容來回答問題。如果問題與網站內容無關，請禮貌地回答：'抱歉，我只能回答與前峰國中哥布林王國網站相關的問題。'
+
+                    當提到成員的 Instagram 帳號時，請將其格式化為 HTML 連結。例如：<a href="[IG網址]" target="_blank" rel="noopener noreferrer" class="font-semibold text-blue-600 hover:underline">@使用者名稱</a>。
+
+                    以下是網站內容：
+                    ${websiteContent}
+                    `;
 
                     // 將使用者訊息加入到新的 chatHistory，並在前面加上系統指令
                     let currentChatHistory = [...chatHistory]; // 複製一份，避免修改原始的 chatHistory
                     currentChatHistory.push({ role: "user", parts: [{ text: systemInstruction + "\n\n使用者問題：" + userMessage }] });
 
                     const payload = { contents: currentChatHistory };
-                    const apiKey = "AIzaSyB3qlfXKCS4nizaaHozIn1-Cuwn5J6OpwE"; // Canvas will automatically provide the API key
+                    const apiKey = "AIzaSyB3qlfXKCS4nizaaHozIn1-Cuwn5J6OpwE"; // 您的 API 金鑰
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                     const response = await fetch(apiUrl, {
