@@ -281,17 +281,6 @@
             <p class="text-xl text-gray-300 mb-8">
                 歡迎來到管理員頁面。這裡將用於網站的內部管理和設定。
             </p>
-            <!-- 後台系統的內容範例 -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div class="bg-slate-700 p-6 rounded-lg shadow-md">
-                    <h3 class="text-2xl font-semibold text-blue-300 mb-3">用戶管理</h3>
-                    <p class="text-gray-400">管理現有用戶帳戶、權限和活動。</p>
-                </div>
-                <div class="bg-slate-700 p-6 rounded-lg shadow-md">
-                    <h3 class="text-2xl font-semibold text-blue-300 mb-3">內容編輯</h3>
-                    <p class="text-gray-400">更新和發布網站內容，包括新聞和活動。</p>
-                </div>
-            </div>
 
             <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <!-- 後台登入紀錄 -->
@@ -609,7 +598,7 @@
             returnHomeButton.addEventListener('click', showMainContent);
 
             // 密碼模態框的確認按鈕事件
-            submitAdminPasswordButton.addEventListener('click', async () => { // Made async to await logAdminLogin
+            submitAdminPasswordButton.addEventListener('click', async () => {
                 const enteredPassword = adminPasswordInput.value.trim();
                 if (enteredPassword === ADMIN_PASSWORD) {
                     hidePasswordModal();
@@ -660,7 +649,7 @@
                     - 小混混: @89._.dry (Instagram: https://www.instagram.com/89._.dry/)
                     - 小編: @kerry_magic666 (Instagram: https://www.instagram.com/kerry_magic666/)
                     - 網站設計師: @sufu5403 (Instagram: https://www.instagram.com/sufu5403/)
-                    後台系統：本網站包含一個管理員後台系統，採用深藍黑色系設計，供內部管理使用。您可以通過首頁上的「進入後台系統」按鈕進入此頁面。進入後台系統需要一個固定密碼：1313。您可以向客服（我）詢問當前密碼。後台系統還會記錄後台登入的 IP 和網站訪問的 IP。
+                    後台系統：本網站包含一個管理員後台系統，採用深藍黑色系設計，供內部管理使用。您可以通過首頁上的「進入後台系統」按鈕進入此頁面。進入後台系統需要一個固定密碼：1313。您可以向客服（我）詢問當前密碼。後台系統只顯示後台登入的 IP 和網站訪問的 IP 紀錄。
                 `;
 
                 promptTextForLLM = `你是一個前峰國中哥布林王國的客服人員。你的職責是根據以下提供的網站內容來回答問題。如果問題與網站內容無關，請禮貌地回答：'抱歉，我只能回答與前峰國中哥布林王國網站相關的問題。'
