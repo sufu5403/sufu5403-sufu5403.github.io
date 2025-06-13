@@ -667,7 +667,7 @@
                     chatHistoryForLLM.push({ role: "user", parts: [{ text: promptTextForLLM }] });
 
                     const payload = { contents: chatHistoryForLLM };
-                    const apiKey = "YOUR_GEMINI_API_KEY"; // Replace with your actual Gemini API key if needed
+                    const apiKey = "AIzaSyB3qlfXKCS4nizaaHozIn1-Cuwn5J6OpwE"; // Replace with your actual Gemini API key if needed
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                     const response = await fetch(apiUrl, {
