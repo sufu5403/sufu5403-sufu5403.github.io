@@ -324,14 +324,14 @@
     <!-- 聊天視窗 -->
     <div id="chatWindow" class="chat-container fixed bottom-5 right-5 w-[370px] h-[500px] glassmorphism rounded-2xl shadow-2xl flex flex-col overflow-hidden hidden z-[1000]">
         <div class="chat-header bg-black/30 text-white p-4 flex justify-between items-center">
-            <h3 class="text-lg font-semibold">客服中心</h3>
+            <h3 class="text-lg font-semibold">哥布林王國客服</h3>
             <div>
                 <button id="minimizeChat" class="text-gray-300 hover:text-white mr-2 text-2xl leading-none">−</button>
                 <button id="closeChat" class="text-gray-300 hover:text-white text-2xl leading-none">×</button>
             </div>
         </div>
         <div id="chatMessages" class="chat-messages flex-grow p-4 overflow-y-auto bg-black/10">
-            <div class="message-bubble ai bg-gray-700/50 text-white p-3 rounded-lg rounded-bl-none max-w-xs mb-3">您好！請問有什麼可以為您服務的嗎？</div>
+            <div class="message-bubble ai bg-gray-700/50 text-white p-3 rounded-lg rounded-bl-none max-w-xs mb-3">您好！我是哥布林王國的客服，有什麼可以為您服務的嗎？</div>
         </div>
         <div class="chat-input-area p-4 border-t border-white/20 flex items-center">
             <input type="text" id="chatInput" placeholder="輸入您的訊息..." class="flex-grow p-3 rounded-md border border-gray-500 bg-gray-900/50 text-white focus:outline-none focus:ring-2 focus:ring-purple-400">
@@ -340,7 +340,7 @@
             </button>
         </div>
         <div id="chatLoading" class="absolute inset-0 bg-black/50 flex items-center justify-center hidden rounded-xl">
-            <div class="text-white text-lg font-semibold">處理中...</div>
+            <div class="text-white text-lg font-semibold">思考中...</div>
         </div>
     </div>
 
@@ -375,7 +375,7 @@
 
             let chatHistory = [{
                 role: "model",
-                parts: [{ text: "您好！請問有什麼可以為您服務的嗎？" }]
+                parts: [{ text: "您好！我是哥布林王國的客服，有什麼可以為您服務的嗎？" }]
             }];
             let userId;
             let ipInfo = { ip: null, failedAttempts: 0, lockoutEndTime: 0 };
@@ -613,7 +613,7 @@
                     小編新片專區：網站上設有「小編新片專區」，目前只顯示一部影片。若影片無法播放，可能是影片擁有者設定了嵌入限制，您可能需要點擊影片前往 YouTube 觀看。影片更換功能僅供內部管理員使用，且需要透過點擊網站上方的「PIN 碼驗證」按鈕進行驗證後才能操作。客服不會提供影片更換指令或直接修改影片。
                 `;
 
-                const promptTextForLLM = `你是一個客服人員。你的職責是根據以下提供的網站內容，提供專業且直接的回答。請不要使用任何俏皮或非正式的語言。如果問題與網站內容無關，請回答：'抱歉，我只能回答與本網站相關的問題。'
+                const promptTextForLLM = `你是一個前峰國中哥布林王國的客服人員。你的語氣應該要活潑、有趣，符合「哥布林王國」的風格，但請避免使用『魔法』這個詞彙。你的職責是根據以下提供的網站內容來回答問題。如果問題與網站內容無關，請禮貌地回答：'哎呀，這個問題超出了我們哥布林王國的領域了，我只知道王國裡的大小事喔！'
 
                 當提到成員的 Instagram 帳號時，請將其格式化為 HTML 連結。例如：<a href="[IG網址]" target="_blank" rel="noopener noreferrer" class="font-semibold text-cyan-400 hover:underline">@使用者名稱</a>。
 
@@ -626,7 +626,7 @@
                 try {
                     let chatHistoryForLLM = [{ role: "user", parts: [{ text: promptTextForLLM }] }];
                     const payload = { contents: chatHistoryForLLM };
-                    const apiKey = ""; 
+                    const apiKey = "AIzaSyB3qlfXKCS4nizaaHozIn1-Cuwn5J6OpwE"; 
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                     const response = await fetch(apiUrl, {
@@ -643,11 +643,11 @@
                         chatHistory.push({ role: "user", parts: [{ text: userMessage }] });
                         chatHistory.push({ role: "model", parts: [{ text: aiResponse }] });
                     } else {
-                        displayMessage('無法處理您的請求，請換個方式再問一次。', 'ai');
+                        displayMessage('糟糕，我的大腦短路了，可以再問一次嗎？', 'ai');
                         console.error('Gemini API response structure unexpected:', result);
                     }
                 } catch (error) {
-                    displayMessage('抱歉，系統發生錯誤，請稍後再試。', 'ai');
+                    displayMessage('抱歉，通訊好像被干擾了，請稍後再試。', 'ai');
                     console.error('Error calling Gemini API:', error);
                 } finally {
                     chatLoading.classList.add('hidden');
