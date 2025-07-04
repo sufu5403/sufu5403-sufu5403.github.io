@@ -194,6 +194,12 @@
         <div class="particle"></div>
     </div>
 
+    <!-- 倒數計時器 -->
+    <div id="countdown-timer" class="fixed top-5 left-5 glassmorphism p-4 rounded-xl shadow-lg text-white text-center z-[1002]">
+        <h4 class="text-lg font-bold mb-2 text-yellow-300">距離改組時間</h4>
+        <div id="timer-display" class="text-2xl font-black tracking-widest"></div>
+    </div>
+
     <!-- IP 鎖定覆蓋層 -->
     <div id="lockoutOverlay" class="fixed inset-0 bg-black bg-opacity-90 text-white flex-col items-center justify-center font-bold text-center z-[1100] hidden">
         <svg class="w-24 h-24 mb-6 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>
@@ -233,8 +239,8 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 members-grid">
-                <!-- 成員卡片模板 -->
-                <div class="animate-fade-in-up glassmorphism p-6 rounded-xl shadow-lg flex flex-col items-center transition-all duration-300 transform hover:-translate-y-2 hover:shadow-cyan-400/30">
+                <!-- 總統卡片 -->
+                <div id="president-card" class="animate-fade-in-up glassmorphism p-6 rounded-xl shadow-lg flex flex-col items-center transition-all duration-300 transform hover:-translate-y-2 hover:shadow-cyan-400/30">
                     <h3 class="text-xl font-bold text-cyan-300 mb-2">總統</h3>
                     <a href="https://www.instagram.com/qwer789456321/" target="_blank" rel="noopener noreferrer" class="text-gray-200 text-lg flex items-center hover:text-cyan-400 transition-colors duration-200">
                         @qwer789456321
@@ -365,6 +371,7 @@
 
     <script type="module">
         document.addEventListener('DOMContentLoaded', () => {
+            // --- 既有元素宣告 ---
             const chatToggleButton = document.getElementById('chatToggleButton');
             const chatWindow = document.getElementById('chatWindow');
             const minimizeChatButton = document.getElementById('minimizeChat');
@@ -388,6 +395,11 @@
             const setVideoButton = document.getElementById('setVideoButton');
             const videoSettingMessage = document.getElementById('videoSettingMessage');
 
+            // --- 新增計時器相關元素宣告 ---
+            const countdownTimerEl = document.getElementById('countdown-timer');
+            const timerDisplayEl = document.getElementById('timer-display');
+            const presidentCardEl = document.getElementById('president-card');
+
             const CORRECT_PIN = "0111";
             const MAX_PIN_ATTEMPTS = 5;
             const LOCKOUT_DURATION_MS = 10 * 60 * 1000; // 10 分鐘
@@ -398,6 +410,34 @@
             }];
             let userId;
             let ipInfo = { ip: null, failedAttempts: 0, lockoutEndTime: 0 };
+
+            // --- 新增計時器邏輯 ---
+            function startCountdown() {
+                const countdownDate = new Date('2025-07-04T15:00:00').getTime();
+
+                const countdownInterval = setInterval(() => {
+                    const now = new Date().getTime();
+                    const distance = countdownDate - now;
+
+                    if (distance < 0) {
+                        clearInterval(countdownInterval);
+                        if(countdownTimerEl) countdownTimerEl.remove();
+                        if(presidentCardEl) presidentCardEl.remove();
+                        return;
+                    }
+
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                    if (timerDisplayEl) {
+                        timerDisplayEl.innerHTML = 
+                            `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    }
+
+                }, 1000);
+            }
+
 
             async function getUserIP() {
                 try {
@@ -624,7 +664,6 @@
                     網站簡介：哥布林王國,成立於2025年3月11日,是一個由國中單身男女組成的聊天聚落。我們自稱「哥布林」,不為別的,只因單身但不孤單,搞笑又真誠,嘴砲中帶點溫柔,日常中充滿火花。這裡沒有王子公主，只有一群在訊息裡互相鬧互相挺的哥布林夥伴。
                     聲明：追蹤我們的帳號，將會無條件拉您進入我們的專屬社群群組！
                     幹部列表：
-                    - 總統: @qwer789456321 (Instagram: https://www.instagram.com/qwer789456321/)
                     - 副總統: @e1310510 (Instagram: https://www.instagram.com/e1310510/)
                     - 總部總裁: @kerry_magic666 (Instagram: https://www.instagram.com/kerry_magic666/)
                     - 小混混: @89._.dry (Instagram: https://www.instagram.com/89._.dry/)
@@ -646,7 +685,7 @@
                 try {
                     let chatHistoryForLLM = [{ role: "user", parts: [{ text: promptTextForLLM }] }];
                     const payload = { contents: chatHistoryForLLM };
-                    const apiKey = "AIzaSyB3qlfXKCS4nizaaHozIn1-Cuwn5J6OpwE"; 
+                    const apiKey = ""; 
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                     const response = await fetch(apiUrl, {
@@ -677,7 +716,9 @@
             sendMessageButton.addEventListener('click', sendMessage);
             chatInput.addEventListener('keypress', (e) => e.key === 'Enter' && sendMessage());
 
+            // --- 初始載入函式呼叫 ---
             loadIpLockoutState();
+            startCountdown(); // 頁面載入時啟動計時器
         });
     </script>
 </body>
